@@ -11,7 +11,7 @@ async function tokenValidation(req, res, next) {
 
         const data = await connection.query(`SELECT * FROM users WHERE id = $1`, [userId]);
         if (!data.rowCount) {
-            return res.status(401).send('Houve algum problema com a sua sessão');
+            return res.status(404).send('Usuário não encontrado');
         }
 
         res.locals.userId = userId;
