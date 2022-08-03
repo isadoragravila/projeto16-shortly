@@ -20,12 +20,19 @@ export async function signUp(req, res) {
 }
 
 export async function signIn(req, res) {
-    //decriptografar senha
-    
-    //validar se o e-mail e a senha batem com o banco de dados
+    const { email, password } = req.body;
+    try {
+        const { rows } = await connection.query(`SELECT * FROM users WHERE email = $1`, [email]);
+        const user = rows[0];
 
-    //gerar token
-    const token = 'token';
-    
-    res.status(200).send(token);
+        if (user && bcrypt.compareSync(password, user.password)) {
+            //gerar o token
+            const token = 'token';
+            return res.status(200).send(token);
+        }
+        return res.status(401).send('E-mail ou senha incorretos!');
+
+    } catch (error) {
+        return res.status(500).send(error);
+    }
 }
