@@ -30,3 +30,21 @@ export async function getUrlById(req, res) {
         return res.status(500).send(error);
     }
 }
+
+export async function redirectUser(req, res) {
+    const { shortUrl } = req.params;
+    try {
+        const { rows } = await connection.query(`SELECT id, "shortUrl", url, "visitCount" FROM urls WHERE "shortUrl" = $1`, [shortUrl]);
+        const data = rows[0];
+
+        if (!data) {
+            return res.sendStatus(404);
+        }
+
+        await connection.query(`UPDATE urls SET "visitCount" = $1 WHERE id = $2`, [data.visitCount + 1, data.id]);
+        res.redirect(data.url);
+
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+}
