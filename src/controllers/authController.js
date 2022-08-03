@@ -1,5 +1,6 @@
 import connection from '../databases/postgres.js';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 export async function signUp(req, res) {
     const { name, email, password } = req.body;
@@ -26,9 +27,14 @@ export async function signIn(req, res) {
         const user = rows[0];
 
         if (user && bcrypt.compareSync(password, user.password)) {
-            //gerar o token
-            const token = 'token';
-            return res.status(200).send(token);
+            const data = { id: user.id };
+            const secretKey = process.env.JWT_SECRET;
+            const options = { expiresIn: 60 * 60 * 24 * 30 };
+            const token = jwt.sign(data, secretKey, options);
+
+            await connection.query(`INSERT INTO sessions ("userId", token) VALUES ($1, $2)`, [user.id, token]);
+
+            return res.status(200).send({ token });
         }
         return res.status(401).send('E-mail ou senha incorretos!');
 
