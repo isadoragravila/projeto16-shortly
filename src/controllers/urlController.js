@@ -48,3 +48,26 @@ export async function redirectUser(req, res) {
         return res.status(500).send(error);
     }
 }
+
+export async function deleteUrl(req, res) {
+    const { id: urlId } = req.params;
+    const userId = res.locals.userId;
+    try {
+        const { rows } = await connection.query(`SELECT * FROM urls WHERE id = $1`, [urlId]);
+        const data = rows[0];
+
+        if (!data) {
+            return res.status(404).send('Url não encontrada');
+        }
+
+        if (data.userId !== userId) {
+            return res.status(401).send('Url não pertence ao usuário ativo');
+        }
+
+        await connection.query(`DELETE FROM urls WHERE id = $1`, [urlId]);
+        return res.sendStatus(204);
+
+    } catch (error) {
+        return res.status(500).send(error);
+    }
+}
