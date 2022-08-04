@@ -7,7 +7,7 @@ export async function shortenUrl(req, res) {
     const shortUrl = nanoid(8);
     try {
         await connection.query(`INSERT INTO urls ("userId", url, "shortUrl") VALUES ($1, $2, $3)`, [userId, url, shortUrl]);
-        return res.sendStatus(201);
+        return res.status(201).send({ shortUrl });
 
     } catch (error) {
         return res.status(500).send(error);
@@ -21,7 +21,7 @@ export async function getUrlById(req, res) {
         const url = rows[0];
 
         if (!url) {
-            return res.sendStatus(404);
+            return res.status(404).send("Url não encontrada");
         }
 
         return res.status(200).send(url);
@@ -38,7 +38,7 @@ export async function redirectUser(req, res) {
         const data = rows[0];
 
         if (!data) {
-            return res.sendStatus(404);
+            return res.status(404).send("Url não encontrada");
         }
 
         await connection.query(`UPDATE urls SET "visitCount" = $1 WHERE id = $2`, [data.visitCount + 1, data.id]);

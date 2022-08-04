@@ -7,7 +7,7 @@ export async function signUp(req, res) {
     try {
         const data = await connection.query(`SELECT * FROM users WHERE email = $1`, [email]);
         if (data.rowCount) {
-            return res.sendStatus(409);
+            return res.status(409).send('E-mail já cadastrado. Tente novamente');
         }
 
         const encryptedPassword = bcrypt.hashSync(password, 10);
@@ -31,8 +31,6 @@ export async function signIn(req, res) {
             const secretKey = process.env.JWT_SECRET;
             const options = { expiresIn: 60 * 60 * 24 * 30 };
             const token = jwt.sign(data, secretKey, options);
-
-            await connection.query(`INSERT INTO sessions ("userId", token) VALUES ($1, $2)`, [user.id, token]);
 
             return res.status(200).send({ token });
         }
